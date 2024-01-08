@@ -48,14 +48,17 @@ func (t *Nullable[T]) SetUnspecified() {
 }
 
 func (t Nullable[T]) MarshalJSON() ([]byte, error) {
+	// case null: explicitly serialize as "null"
 	if t.IsNull() {
 		return []byte("null"), nil
 	}
+	// case not specified and omitempty: will be ommited
+	// case of an actual value: marshal that value
 	return json.Marshal(t[true])
 }
 
 func (t *Nullable[T]) UnmarshalJSON(data []byte) error {
-	// - case not specified: UnmarshalJSON is never called
+	// - case not provided: UnmarshalJSON will not even be called
 	// - case of an explicit null: check for that data explicitly
 	if bytes.Equal(data, []byte("null")) {
 		t.SetNull()
@@ -68,8 +71,4 @@ func (t *Nullable[T]) UnmarshalJSON(data []byte) error {
 	}
 	t.Set(v)
 	return nil
-}
-
-func main() {
-
 }
